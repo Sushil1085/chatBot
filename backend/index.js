@@ -42,14 +42,18 @@ app.post("/chat-body", (req, res) => {
     });
 });
 
-app.post("/newChat",async(req,res)=>{
+app.post("/newChat/:userid",async(req,res)=>{
 
     const {allchats}=req.body;
+    const {userid}=req.params;
+
+    console.log(userid,"userid");
+    
 
     const message =(allchats?.userMessage?.data.split(" ").slice(0, 4).join(" "));
 
-    query = 'INSERT INTO chat_titles (message) VALUES (?)'
-    values = [message]
+    query = 'INSERT INTO chat_titles (message,userid) VALUES (?,?)'
+    values = [message,userid]
 
     database.query(query, values, (err, result) => {
         if (err) {
@@ -105,9 +109,11 @@ app.delete("/deleteChat",(req,res)=>{
     })
 })
 
-app.get("/getsidebardata", (req, res) => {
-    const sql='select * from chat_titles'
-    database.query(sql, (err, results) => {
+app.get("/getsidebardata/:userid", (req, res) => {
+    const{userid}=req.params;
+    const sql='select * from chat_titles where userid=?'
+    value=[userid];
+    database.query(sql,value, (err, results) => {
         if (err) {
             console.error("Error fetching sidebar data:", err);
             return res.status(500).json({ error: "Database query failed" });
@@ -117,11 +123,23 @@ app.get("/getsidebardata", (req, res) => {
 
 })
 
-app.get("/getsidebardata/:id", (req, res) => {
+app.get("/getsidebardata/:userid/:id", (req, res) => {
     const{id}=req.params;
-    const sql='select * from all_chat where title_id=?'
-    value=id;
+    const{userid}=req.params;
+
+    const sql='select * from chat_titles where userid=?'
+    const value=[userid];
     database.query(sql,value, (err, results) => {
+        if (err) {
+            console.error("Error fetching sidebar data:", err);
+            return res.status(500).json({ error: "Database query failed" });
+        }
+    });
+
+
+    const sql1='select * from all_chat where title_id=?'
+    value1=id;
+    database.query(sql1,value1, (err, results) => {
         if (err) {
             console.error("Error fetching sidebar data:", err);
             return res.status(500).json({ error: "Database query failed" });

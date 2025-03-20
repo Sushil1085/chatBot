@@ -19,11 +19,12 @@ function App() {
     
         <Router>
       <Routes>
-        <Route path="/login" element={<UserLogin />} />
+        <Route path="/" element={<UserLogin />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/" element={<Layout  />}>
-          <Route path="/" element={<MainPage />} /> 
-          <Route path="/:id" element={<MainPage />} />
+          <Route path="/guestmode" element={<MainPage />} /> 
+          <Route path="/:userid" element={<MainPage />} />
+          <Route path="/:userid/:id" element={<MainPage />} />
           {/* <Route path="/login" element={<UserLogin />} /> */}
         </Route>
       </Routes>

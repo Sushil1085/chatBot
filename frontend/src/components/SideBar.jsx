@@ -13,13 +13,15 @@ const SideBar = () => {
 
   const { setClearChat } = useChat(); 
 
+  const { id } = useParams();
 
+  const { userid } = useParams();
 
   const navigate = useNavigate();
 
   const getData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/getsidebardata");
+      const response = await axios.get(`http://localhost:5000/getsidebardata/${userid}`);
 
       setSideData(response.data);
     } catch (error) {
@@ -27,8 +29,7 @@ const SideBar = () => {
     }
   };
 
-  const { id } = useParams();
-
+ 
 
   useEffect(() => {
 
@@ -37,7 +38,7 @@ const SideBar = () => {
   }, [id])
 
   const partData = async (value) => {
-    navigate(`/${value}`)
+    navigate(`/${userid}/${value}`)
   }
 
   const handleDelete = async (id) => {
@@ -47,7 +48,7 @@ const SideBar = () => {
       });
       setClearChat(true);
       getData();
-      navigate("/");
+      navigate(`/${userid}`);
     } catch (error) {
       console.error("Error fetching chat data", error);
     }

@@ -2,11 +2,13 @@ import { Box, Button, Flex, FormControl, FormErrorMessage, FormHelperText, FormL
 import axios from "axios";
 import { useState } from "react"
 import { useNavigate } from "react-router-dom";
+import { useChat } from "../ChatContext";
 
 const UserLogin = () => {
 
     const [emailid, setEmailid] = useState('');
     const [password, setPassword] = useState('');
+    const {setUsername} = useChat();
 
     const isError = !emailid || !password
 
@@ -19,6 +21,8 @@ const UserLogin = () => {
             emailid:emailid,
             password:password
         })
+        setUsername(response.data.user.username);
+        
         const userid=response.data.user.userid;
         
         

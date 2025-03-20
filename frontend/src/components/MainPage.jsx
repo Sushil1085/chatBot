@@ -1,5 +1,5 @@
 import { AddIcon, Search2Icon } from "@chakra-ui/icons";
-import { Box, Button, Card, CardHeader, Center, Flex, Grid, GridItem, Heading, Icon, Radio, RadioGroup, Stack, Text, Textarea } from "@chakra-ui/react";
+import { Avatar, Box, Button, Card, CardHeader, Center, Flex, Grid, GridItem, Heading, Icon, Radio, RadioGroup, Stack, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import "../App.css";
@@ -13,15 +13,15 @@ const MainPage = () => {
     const [allchats, setAllchats] = useState([]);
     const [chatHistory, setChatHistory] = useState([]);
     const { clearChat, setClearChat } = useChat();
+    const { username } = useChat();
     const bottomRef = useRef(null);
 
-    let { id } = useParams();
     const navigate = useNavigate();
-    
-    
 
-    // const location = useLocation();
+    let { id } = useParams();
+    const { userid } = useParams();
 
+    console.log("id:", id, "Type:", typeof id);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -83,7 +83,7 @@ const MainPage = () => {
 
     }, [allchats, clearChat, id, setClearChat]);
 
-    // console.log(allchats);
+    console.log(allchats);
 
 
     const sendResponse = async (message, sender) => {
@@ -101,12 +101,12 @@ const MainPage = () => {
     const sendNewChat = async (allchats) => {
 
         try {
-            const response = await axios.post('http://localhost:5000/newChat', {
+            const response = await axios.post(`http://localhost:5000/newChat/${userid}`, {
                 allchats
             })
             // console.log(response.data.chat_id,"chat_id");
 
-            navigate(`/${response.data.chat_id}`);
+            navigate(`/${userid}/${response.data.chat_id}`);
 
         } catch (error) {
             console.error("Error saving message:", error);
@@ -115,8 +115,8 @@ const MainPage = () => {
 
     const getsidebardata = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:5000/getsidebardata/${id}`);
-            // console.log(response.data);
+            const response = await axios.get(`http://localhost:5000/getsidebardata/${userid}/${id}`);
+            // console.log(response.data,"setChatHistory");
             setChatHistory(response.data)
         } catch (error) {
             console.error("Error fetching data", error);
@@ -130,7 +130,11 @@ const MainPage = () => {
     return (
 
         <Flex h="100vh" bgColor="#1A202C" flexDir="column" justifyContent="space-between" alignItems={'center'} gap={4} >
-            <Flex bg={'#171923'} h={'60px'} w={'100%'} ></Flex>
+            <Flex bg={'#171923'} h={'90px'} w={'100%'} >
+                <Flex bg={'#171923'} w={'100%'} justifyContent={'flex-end'} alignItems={'center'}>
+                    <Avatar size={'sm'} mr={'10px'} src='https://bit.ly/broken-link' /><Text color={'white'} mr={'20px'}> {username}</Text>
+                </Flex>
+            </Flex>
             {/* <Text color="white">
                 {parts.map((part, index) =>
                     part.startsWith("*") && part.endsWith("*") ? (
@@ -144,8 +148,12 @@ const MainPage = () => {
                     )
                 )}
             </Text> */}
+
+
+
+
             <Button
-                onClick={() => { navigate("/"); setAllchats([]) }}
+                onClick={() => { navigate(`/${userid}`); setAllchats([]) }}
                 alignSelf={'flex-start'} colorScheme='#1A202C'><AddIcon mr={'7px'} /> New Chat
             </Button>
 
@@ -174,7 +182,7 @@ const MainPage = () => {
                     },
                 }}
             >
-                {id ? (
+                {id  ?  (
                     chatHistory.map((chat, index) => (
                         <Box
                             key={index}
@@ -199,7 +207,6 @@ const MainPage = () => {
                                 <Text>{chat.message}</Text>
                             )}
                             <div ref={bottomRef}></div>
-                            {/* {chat.sender === "chatbot" ? (<Text className="typing-animation">{chat.message}</Text>) : (<Text>{chat.message}</Text>)} */}
 
                         </Box>
                     ))
@@ -216,22 +223,28 @@ const MainPage = () => {
                             my="8px"
                             boxShadow="md"
                         >
-                            {/* <Text>Hewlmelwnfnnerf</Text> */}
 
-                            {/* {chat.sender === "chatbot" && index === allchats.length - 1 ? (
+                            {chat.sender === "chatbot" && index === allchats.length - 1 ? (
                                 <TypeAnimation
                                     sequence={[chat.message]}
                                     wrapper="span"
-                                    speed={50}
+                                    speed={70}
+                                    cursor={false}
                                     style={{ display: "inline-block" }}
                                 />
                             ) : (
                                 <Text>{chat.message}</Text>
-                            )} */}
+                            )}
 
                         </Box>
                     ))
                 )}
+
+                {/* {id === undefined ? (
+                    <Text color={"white"}> undefined................................. </Text>
+                ) : (
+                    <Text color={"white"}> not................................. </Text>
+                )} */}
 
 
 
@@ -240,10 +253,10 @@ const MainPage = () => {
             <Flex bg={'#2D3748'} color={'white'} h={'150px'} w={'70%'} borderRadius="20px" mb="15px" zIndex="20" flexDirection="column-reverse" >
                 <Flex justifyContent="flex-end">
                     {value.length > 0 ? <Button w="40px" h="40px" color={"white"} bg="#171923" borderRadius="100%" m="5px"
-                       _hover={{ bg: "#4A90E2" }}
+                        _hover={{ bg: "#4A90E2" }}
                         onClick={handleSubmit}>
-                           
-                        <Icon as={VscSend} boxSize={4} /> 
+
+                        <Icon as={VscSend} boxSize={4} />
 
                     </Button> : " "}
 

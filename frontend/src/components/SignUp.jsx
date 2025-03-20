@@ -60,7 +60,7 @@ const SignUp = () => {
 
                         <Button onClick={handleSubmit} colorScheme='blue' mt={"50px"} >Sign Up</Button>
 
-                        <Text alignSelf="flex-start" ml={"20px"} mt={"20px"} color={"gray"} cursor="pointer" onClick={() => navigate("/login")} >Already have an account</Text>
+                        <Text alignSelf="flex-start" ml={"20px"} mt={"20px"} color={"gray"} cursor="pointer" onClick={() => navigate("/")} >Already have an account</Text>
 
                     </Flex>
                 </Flex>
