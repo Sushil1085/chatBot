@@ -1,5 +1,5 @@
-import { AddIcon, Search2Icon } from "@chakra-ui/icons";
-import { Avatar, Box, Button, Card, CardHeader, Center, Flex, Grid, GridItem, Heading, Icon, Radio, RadioGroup, Stack, Text, Textarea } from "@chakra-ui/react";
+import { AddIcon, DeleteIcon, Search2Icon } from "@chakra-ui/icons";
+import { Avatar, Box, Button, Card, CardHeader, Center, Flex, Grid, GridItem, Heading, Icon, Popover, PopoverArrow, PopoverBody, PopoverCloseButton, PopoverContent, PopoverFooter, PopoverHeader, PopoverTrigger, Portal, Radio, RadioGroup, Stack, Text, Textarea } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import "../App.css";
@@ -11,8 +11,10 @@ import { VscSend } from "react-icons/vsc";
 const MainPage = () => {
     const [value, setValue] = useState("");
     const [allchats, setAllchats] = useState([]);
+    // const [guest,setGuest] = useState([]);
     const [chatHistory, setChatHistory] = useState([]);
-    const { clearChat, setClearChat } = useChat();
+    const [loading, setLoading] = useState(false);
+    const { clearChat, setClearChat, logout } = useChat();
     const { username } = useChat();
     const bottomRef = useRef(null);
 
@@ -21,29 +23,39 @@ const MainPage = () => {
     let { id } = useParams();
     const { userid } = useParams();
 
-    console.log("id:", id, "Type:", typeof id);
+    // console.log("id:", id, "Type:", typeof id);
+    // console.log(guest,"guest");
+
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         const userMessage = { data: value, sender: "user" };
-        const loadingMessage = { data: <div className="loader"></div>, sender: "chatbot" };
+        // const loadingMessage = { data: <div className="loader"></div>, sender: "chatbot" };
 
-        setAllchats((prevchats) => [...prevchats, userMessage, loadingMessage]);
+        setAllchats((prevchats) => [...prevchats, userMessage]);
+        // setGuest((prevchats) => [...prevchats, userMessage, loadingMessage]);
+
+        // console.log(allchats);
+
 
         if (id) {
             sendResponse(value, "user");
         }
         setValue("");
+        setLoading(true);
 
         try {
-            const res = await axios.get(`http://216.10.251.154:5000/ask?question=${value}`);
+            const res = await axios.get(`http://216.10.251.154:5000/get_info?query=${value}`);
 
-
+            if (res) setLoading(false);
+            // console.log(value,"value");
             setAllchats((prevchats) => [
-                ...prevchats.slice(0, -1),
+                ...prevchats,
                 { data: res.data.response || "No response received", sender: "chatbot" }
             ]);
+
+
 
             if (id) {
                 // console.log("from id is present");
@@ -61,7 +73,7 @@ const MainPage = () => {
         } catch (error) {
             console.error("Error fetching response", error);
             setAllchats((prevchats) => [
-                ...prevchats.slice(0, -1),
+                ...prevchats,
                 { data: "I am not able to find", sender: "chatbot" }
             ]);
             sendResponse(error, "chatbot");
@@ -77,13 +89,11 @@ const MainPage = () => {
             setAllchats([]);
             setClearChat(false);
         }
-        setTimeout(() => {
-            bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+        if (bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
 
-    }, [allchats, clearChat, id, setClearChat]);
-
-    console.log(allchats);
+    }, [allchats, clearChat, id, setClearChat,chatHistory, loading]);
 
 
     const sendResponse = async (message, sender) => {
@@ -123,6 +133,11 @@ const MainPage = () => {
         }
     }
 
+    const handleLogout = () => {
+        logout();
+        navigate("/");
+    };
+
     // const text = "This is *bold text* and this is normal text.";
 
     // const parts = text.split(/(\*.*?\*)/g);
@@ -132,7 +147,26 @@ const MainPage = () => {
         <Flex h="100vh" bgColor="#1A202C" flexDir="column" justifyContent="space-between" alignItems={'center'} gap={4} >
             <Flex bg={'#171923'} h={'90px'} w={'100%'} >
                 <Flex bg={'#171923'} w={'100%'} justifyContent={'flex-end'} alignItems={'center'}>
-                    <Avatar size={'sm'} mr={'10px'} src='https://bit.ly/broken-link' /><Text color={'white'} mr={'20px'}> {username}</Text>
+                    <Popover placement='bottom-end' >
+                        <PopoverTrigger>
+                            <Avatar size={'sm'} mr={'10px'} src='https://bit.ly/broken-link' />
+                        </PopoverTrigger>
+                        <Text color={'white'} mr={'20px'}> {username}</Text>
+                        <Portal >
+                            <PopoverContent h={'100px'} w={'240px'} bgColor={"#171923"} color="white" border={'none'}>
+                                <PopoverArrow bgColor={"#171923"} />
+                                <PopoverHeader border={'none'}><Flex justifyContent={'center'}>Do you want to logout?</Flex></PopoverHeader>
+                                <PopoverCloseButton />
+                                <PopoverBody>
+                                    <Flex justifyContent="center">
+                                        <Button colorScheme='red' onClick={handleLogout}>Log Out</Button>
+                                    </Flex>
+                                </PopoverBody>
+                            </PopoverContent>
+                        </Portal>
+                    </Popover>
+
+
                 </Flex>
             </Flex>
             {/* <Text color="white">
@@ -182,8 +216,11 @@ const MainPage = () => {
                     },
                 }}
             >
-                {id  ?  (
+
+                {id && (
+
                     chatHistory.map((chat, index) => (
+            
                         <Box
                             key={index}
                             alignSelf={chat.sender === "chatbot" ? "flex-start" : "flex-end"}
@@ -194,6 +231,7 @@ const MainPage = () => {
                             maxW="60%"
                             my="8px"
                             boxShadow="md"
+
                         >
                             {chat.sender === "chatbot" && index === chatHistory.length - 1 ? (
                                 <TypeAnimation
@@ -206,48 +244,29 @@ const MainPage = () => {
                             ) : (
                                 <Text>{chat.message}</Text>
                             )}
-                            <div ref={bottomRef}></div>
-
-                        </Box>
-                    ))
-                ) : (
-                    allchats.map((chat, index) => (
-                        <Box
-                            key={index}
-                            alignSelf={chat.sender === "chatbot" ? "flex-start" : "flex-end"}
-                            bg={chat.sender === "chatbot" ? "#2D3748" : "#4A90E2"}
-                            color="white"
-                            borderRadius="20px"
-                            p="10px"
-                            maxW="60%"
-                            my="8px"
-                            boxShadow="md"
-                        >
-
-                            {chat.sender === "chatbot" && index === allchats.length - 1 ? (
-                                <TypeAnimation
-                                    sequence={[chat.message]}
-                                    wrapper="span"
-                                    speed={70}
-                                    cursor={false}
-                                    style={{ display: "inline-block" }}
-                                />
-                            ) : (
-                                <Text>{chat.message}</Text>
-                            )}
+                            
 
                         </Box>
                     ))
                 )}
 
-                {/* {id === undefined ? (
-                    <Text color={"white"}> undefined................................. </Text>
-                ) : (
-                    <Text color={"white"}> not................................. </Text>
-                )} */}
+                {loading && (
+                    <Box
+                        alignSelf="flex-start"
+                        bg="#2D3748"
+                        color="white"
+                        borderRadius="20px"
+                        p="10px"
+                        maxW="60%"
+                        my="8px"
+                        boxShadow="md"
+                        
+                    >
+                        <Box className="loader"></Box>
+                    </Box>
+                )}
 
-
-
+<div ref={bottomRef}></div>
             </Flex>
 
             <Flex bg={'#2D3748'} color={'white'} h={'150px'} w={'70%'} borderRadius="20px" mb="15px" zIndex="20" flexDirection="column-reverse" >

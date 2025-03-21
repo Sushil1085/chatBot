@@ -47,7 +47,7 @@ app.post("/newChat/:userid",async(req,res)=>{
     const {allchats}=req.body;
     const {userid}=req.params;
 
-    console.log(userid,"userid");
+    // console.log(userid,"userid");
     
 
     const message =(allchats?.userMessage?.data.split(" ").slice(0, 4).join(" "));

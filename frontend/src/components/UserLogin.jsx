@@ -1,75 +1,128 @@
-import { Box, Button, Flex, FormControl, FormErrorMessage, FormHelperText, FormLabel, Heading, Input, Text } from "@chakra-ui/react"
+import React from "react";
+import { useForm } from "react-hook-form";
+import {
+  Box,
+  Button,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormHelperText,
+  FormLabel,
+  Heading,
+  Input,
+  Text,
+} from "@chakra-ui/react";
 import axios from "axios";
-import { useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { useChat } from "../ChatContext";
+import { useToast } from "@chakra-ui/react";
 
 const UserLogin = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { setUsername } = useChat();
+  const navigate = useNavigate();
+  const toast = useToast();
 
-    const [emailid, setEmailid] = useState('');
-    const [password, setPassword] = useState('');
-    const {setUsername} = useChat();
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios.post("http://localhost:5000/loginuser", {
+        emailid: data.email,
+        password: data.password,
+      });
 
-    const isError = !emailid || !password
+      setUsername(response.data.user.username);
+      const userid = response.data.user.userid;
 
-    const navigate = useNavigate();
-
-    const handleSubmit =async(e)=>{
-        e.preventDefault();
-
-        const response =await axios.post("http://localhost:5000/loginuser",{
-            emailid:emailid,
-            password:password
-        })
-        setUsername(response.data.user.username);
-        
-        const userid=response.data.user.userid;
-        
-        
-        if(response){
-            navigate(`/${userid}`);
-        }
+      if (response) {
+        toast({
+          title: "Login Successful!",
+          description: "Welcome back!",
+          status: "success",
+          duration: 5000,
+          position: "top",
+          isClosable: true,
+        });
+        navigate(`/${userid}`);
+      }
+    } catch (err) {
+      console.log(err);
+      toast({
+        title: "Login Failed!",
+        description: "Invalid Credentials!",
+        status: "error",
+        duration: 5000,
+        position: "top",
+        isClosable: true,
+      });
     }
+  };
 
-    return (
-        <>
-            <Box h="100vh" bg="#1A202C"  >
-                <Flex h={"100vh"} justifyContent={"center"} alignItems={"center"} >
-                    <Flex h={"500px"} w={"500px"} bg={"#171923"} color={"white"} justifyContent={"center"} alignItems={"center"} borderRadius={"20px"} flexDirection={"column"} >
-                        
-                        <Heading mb={"20px"} fontSize={"30px"}>Login</Heading>
-                        
-                        <FormControl isInvalid={isError} w={"60%"}>
-                            <FormLabel>Email</FormLabel>
-                            <Input type='email' value={emailid} onChange={(e) => setEmailid(e.target.value)} />
-                            {!isError ? (
-                                <FormHelperText>
-                                    Enter the email.
-                                </FormHelperText>
-                            ) : (
-                                <FormErrorMessage>Email is required.</FormErrorMessage>
-                            )}
+  return (
+    <Box h="100vh" bg="#1A202C">
+      <Flex h="100vh" justifyContent="center" alignItems="center">
+        <Flex
+          h="500px"
+          w="500px"
+          bg="#171923"
+          color="white"
+          justifyContent="center"
+          alignItems="center"
+          borderRadius="20px"
+          flexDirection="column"
+        >
+          <Heading mb="20px" fontSize="30px">
+            Login
+          </Heading>
 
-                            <FormLabel>Password</FormLabel>
-                            <Input type='password' value={password} onChange={(e)=>setPassword(e.target.value)} />
-                            {!isError ? (
-                                <FormHelperText>
-                                    Enter the Password.
-                                </FormHelperText>
-                            ) : (
-                                <FormErrorMessage>Password is required.</FormErrorMessage>
-                            )}
-                        </FormControl>
+          <form onSubmit={handleSubmit(onSubmit)} style={{ width: "60%" }}>
+            {/* Email Field */}
+            <FormControl isInvalid={errors.email}>
+              <FormLabel>Email</FormLabel>
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                {...register("email", { required: "Email is required"})}
+              />
+              {errors.email ? (
+                <FormErrorMessage>{errors.email.message}</FormErrorMessage>
+              ) : (
+                <FormHelperText>Enter the email.</FormHelperText>
+              )}
+            </FormControl>
 
-                        <Button onClick={handleSubmit} colorScheme='blue' mt={"70px"} >Login</Button>
-                        
-                        <Text alignSelf="flex-start" ml={"20px"} mt={"20px"} color={"gray"} cursor="pointer" onClick={()=>navigate("/signup")} >Don't have an account?</Text>
-                        
-                    </Flex>
-                </Flex>
-            </Box>
-        </>
-    )
-}
+            {/* Password Field */}
+            <FormControl isInvalid={errors.password} mt="20px">
+              <FormLabel>Password</FormLabel>
+              <Input
+                type="password"
+                placeholder="Enter your password"
+                {...register("password", { required: "Password is required", minLength: 6 })}
+              />
+              {errors.password ? (
+                <FormErrorMessage>{errors.password.message}</FormErrorMessage>
+              ) : (
+                <FormHelperText>Enter the Password.</FormHelperText>
+              )}
+            </FormControl>
 
+            <Button type="submit" colorScheme="blue" mt="40px" width="100%">
+              Login
+            </Button>
+          </form>
+
+          <Text
+            alignSelf="flex-start"
+            ml="20px"
+            mt="20px"
+            color="gray"
+            cursor="pointer"
+            onClick={() => navigate("/signup")}
+          >
+            Don't have an account?
+          </Text>
+        </Flex>
+      </Flex>
+    </Box>
+  );
+};
 export default UserLogin;
