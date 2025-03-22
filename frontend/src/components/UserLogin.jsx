@@ -56,6 +56,7 @@ const UserLogin = () => {
       });
     }
   };
+  
 
   return (
     <Box h="100vh" bg="#1A202C">
@@ -77,11 +78,12 @@ const UserLogin = () => {
           <form onSubmit={handleSubmit(onSubmit)} style={{ width: "60%" }}>
             {/* Email Field */}
             <FormControl isInvalid={errors.email}>
+              
               <FormLabel>Email</FormLabel>
               <Input
-                type="email"
+                type="text"
                 placeholder="Enter your email"
-                {...register("email", { required: "Email is required"})}
+                {...register("email", { required: "Email is required",pattern:{value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, message: "Invalid email format" } })}
               />
               {errors.email ? (
                 <FormErrorMessage>{errors.email.message}</FormErrorMessage>

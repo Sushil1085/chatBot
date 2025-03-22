@@ -1,62 +1,25 @@
-import { Box, Button, Flex, FormControl, FormErrorMessage, FormHelperText, FormLabel, Heading, Input, Text, Toast, useToast } from "@chakra-ui/react"
+import { 
+    Box, Button, Flex, FormControl, FormErrorMessage, FormLabel, Heading, Input, Text, useToast 
+} from "@chakra-ui/react";
 import axios from "axios";
-import { useState } from "react"
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
+    const { 
+        register, 
+        handleSubmit, 
+        watch,
+        formState: { errors } 
+    } = useForm();
 
-    const [username, setUsername] = useState('');
-    const [emailid, setEmailid] = useState('');
-    const [password, setPassword] = useState('');
-    const [consfirmPassword, setConfirmPassword] = useState('');
-
-    const toast = useToast()
+    const toast = useToast();
     const navigate = useNavigate();
+    const password = watch("password"); 
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!username || !emailid || !password) {
-            toast({
-                title: "Please fill all the fields",
-                description: "All fields are required",
-                status: "error",
-                duration: 5000,
-                position: "top",
-                isClosable: true,
-            });
-            return
-        }
-        if(password !== consfirmPassword){
-            toast({
-                title: "Password does not match",
-                description: "Please check your password",
-                status: "error",
-                duration: 5000,
-                position: "top",
-                isClosable: true,
-            });
-            return
-        }
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(emailid)) {
-            toast({
-                title: "Invalid Email",
-                description: "Please enter a valid email address (e.g., abc@gmail.com)",
-                status: "error",
-                duration: 5000,
-                position: "top",
-                isClosable: true,
-            });
-            return;
-        }
-
+    const onSubmit = async (data) => {
         try {
-
-            const response = await axios.post("http://localhost:5000/adduser", {
-                username: username,
-                emailid: emailid,
-                password: password
-            })
+            const response = await axios.post("http://localhost:5000/adduser", data);
 
             if (response.data.message === "User added successfully") {
                 toast({
@@ -70,9 +33,9 @@ const SignUp = () => {
                 navigate("/");
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
             toast({
-                title: "Something wents wrong",
+                title: "Something went wrong",
                 description: "Please check your credentials",
                 status: "error",
                 duration: 5000,
@@ -80,56 +43,76 @@ const SignUp = () => {
                 isClosable: true,
             });
         }
-
-    }
+    };
 
     return (
-        <>
-            <Box h="100vh" bg="#1A202C"  >
-                <Flex h={"100vh"} justifyContent={"center"} alignItems={"center"} >
-                    <Flex h={"600px"} w={"500px"} bg={"#171923"} color={"white"} justifyContent={"center"} alignItems={"center"} borderRadius={"20px"} flexDirection={"column"} >
+        <Box h="100vh" bg="#1A202C">
+            <Flex h="100vh" justifyContent="center" alignItems="center">
+                <Flex 
+                    h="600px" w="500px" bg="#171923" color="white" 
+                    justifyContent="center" alignItems="center" 
+                    borderRadius="20px" flexDirection="column"
+                >
+                    <Heading mb="20px" fontSize="30px">Sign Up</Heading>
 
-                        <Heading mb={"20px"} fontSize={"30px"}>Sign Up</Heading>
-
-                        <FormControl isRequired w={"60%"} >
-                            <FormLabel >User name</FormLabel>
-                            <Input mb={"20px"} placeholder='User name'
-                                onChange={(e) => setUsername(e.target.value)}
-                                value={username}
+                    <form onSubmit={handleSubmit(onSubmit)} style={{ width: "60%" }}>
+                        <FormControl isInvalid={errors.username}>
+                            <FormLabel>Username</FormLabel>
+                            <Input 
+                                placeholder="Username"
+                                {...register("username", { required: "Username is required" })}
                             />
-
-                            <FormLabel>Email Id</FormLabel>
-                            <Input mb={"20px"} placeholder='Email Id'
-                                onChange={(e) => setEmailid(e.target.value)}
-                                value={emailid}
-                            />
-
-                            <FormLabel >Password</FormLabel>
-                            <Input mb={"20px"} placeholder='Password'
-                                type="password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                value={password}
-                            />
-
-                            <FormLabel >Confirm Password</FormLabel>
-                            <Input placeholder='Confirm Password'
-                                type="password"
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                value={consfirmPassword}
-                            />
-
-
+                            <FormErrorMessage>{errors.username?.message}</FormErrorMessage>
                         </FormControl>
 
-                        <Button onClick={handleSubmit} colorScheme='blue' mt={"50px"} >Sign Up</Button>
+                        <FormControl mt="4" isInvalid={errors.emailid}>
+                            <FormLabel>Email</FormLabel>
+                            <Input 
+                                placeholder="Email"
+                                {...register("emailid", { 
+                                    required: "Email is required",
+                                    pattern: {
+                                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                                        message: "Invalid email format"
+                                    }
+                                })}
+                            />
+                            <FormErrorMessage>{errors.emailid?.message}</FormErrorMessage>
+                        </FormControl>
 
-                        <Text alignSelf="flex-start" ml={"20px"} mt={"20px"} color={"gray"} cursor="pointer" onClick={() => navigate("/")} >Already have an account</Text>
+                        <FormControl mt="4" isInvalid={errors.password}>
+                            <FormLabel>Password</FormLabel>
+                            <Input 
+                                type="password" placeholder="Password"
+                                {...register("password", { required: "Password is required" })}
+                            />
+                            <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
+                        </FormControl>
 
-                    </Flex>
+                        <FormControl mt="4" isInvalid={errors.confirmPassword}>
+                            <FormLabel>Confirm Password</FormLabel>
+                            <Input 
+                                type="password" placeholder="Confirm Password"
+                                {...register("confirmPassword", { 
+                                    required: "Confirm Password is required",
+                                    validate: (value) => value === password || "Passwords do not match"
+                                })}
+                            />
+                            <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
+                        </FormControl>
+
+                        <Button type="submit" colorScheme="blue" mt="6" width="100%">
+                            Sign Up
+                        </Button>
+                    </form>
+
+                    <Text mt="4" color="gray" cursor="pointer" onClick={() => navigate("/")}>
+                        Already have an account? Log in
+                    </Text>
                 </Flex>
-            </Box>
-        </>
-    )
-}
+            </Flex>
+        </Box>
+    );
+};
 
 export default SignUp;
