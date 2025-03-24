@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const database = require('./database');
 const bcrypt = require("bcrypt");
+const multer  = require('multer')
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +28,27 @@ app.use(express.json());
 //         res.status(201).json({ message: "Chat created successfully", chat_id: result.insertId });
 //     });
 // });
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // Save files in "uploads" folder
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + '-' + file.originalname);
+    }
+});
+
+// Use storage in multer config
+const upload = multer({ storage: storage });
+
+app.post('/profile', upload.single('avatar'), function (req, res, next) {
+    if (!req.file) {
+        return res.status(400).send("No file uploaded.");
+    }
+
+    console.log(req.file, "File Details");
+    res.send("File uploaded successfully!");
+});
 
 app.post("/chat-body", (req, res) => {
     const { message, sender, title_id } = req.body;

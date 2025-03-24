@@ -153,14 +153,17 @@ const MainPage = () => {
                         </PopoverTrigger>
                         <Text color={'white'} mr={'20px'}> {username}</Text>
                         <Portal >
-                            <PopoverContent h={'100px'} w={'240px'} bgColor={"#171923"} color="white" border={'none'}>
+                            <PopoverContent h={'150px'} w={'350px'} bgColor={"#171923"} color="white" border={'none'}>
                                 <PopoverArrow bgColor={"#171923"} />
-                                <PopoverHeader border={'none'}><Flex justifyContent={'center'}>Do you want to logout?</Flex></PopoverHeader>
+                                <PopoverHeader border={'none'}><Flex gap={2} alignItems={'center'} justifyContent={'space-between'}>Upload a file
+                                <Button colorScheme='blue' onClick={handleLogout}>Log Out</Button>
+                                </Flex>
+                                </PopoverHeader>
                                 <PopoverCloseButton />
                                 <PopoverBody>
-                                    <Flex justifyContent="center">
-                                        <Button colorScheme='red' onClick={handleLogout}>Log Out</Button>
-                                    </Flex>
+                                <Flex gap={1} alignItems={'center'} justifyContent={'space-between'} >Do you want to logout?
+                                <Button colorScheme='red' onClick={handleLogout}>Log Out</Button>
+                                </Flex>
                                 </PopoverBody>
                             </PopoverContent>
                         </Portal>
