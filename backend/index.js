@@ -41,12 +41,12 @@ const storage = multer.diskStorage({
 // Use storage in multer config
 const upload = multer({ storage: storage });
 
-app.post('/profile', upload.single('avatar'), function (req, res, next) {
+app.post('/upload', upload.single('avatar'), function (req, res, next) {
     if (!req.file) {
         return res.status(400).send("No file uploaded.");
     }
 
-    console.log(req.file, "File Details");
+    // console.log(req.file, "File Details");
     res.send("File uploaded successfully!");
 });
 
