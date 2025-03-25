@@ -75,6 +75,7 @@ const MainPage = () => {
                     fileInputRef.current.value = "";
                 }
                 setFile(null);
+                onEditClose();
             }
         } catch (error) {
             console.error("Upload error:", error);
@@ -314,7 +315,7 @@ const MainPage = () => {
                                 <Button ref={editCancelRef} onClick={onEditClose}>
                                     Cancel
                                 </Button>
-                                <Button colorScheme='red' ref={editCancelRef} ml={3} onClick={handleFileSubmit}>
+                                <Button colorScheme='red'  ml={3} onClick={handleFileSubmit}>
                                     Submit
                                 </Button>
                             </AlertDialogFooter>
