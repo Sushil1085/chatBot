@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 backend/uploads/
+
+backend/uploads/*
+!backend/uploads/.gitkeep
+
