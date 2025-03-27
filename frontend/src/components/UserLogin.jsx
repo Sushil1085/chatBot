@@ -25,6 +25,28 @@ const UserLogin = () => {
 
   const onSubmit = async (data) => {
     try {
+      if (data.email ==="admin@gmail.com"){
+        const response = await axios.post("http://localhost:5000/loginadmin", {
+          emailid: data.email,
+          password: data.password,
+        },{ withCredentials: true } );
+        
+        setUsername(response.data.user.username);
+        // const userid = response.data.user.userid;
+
+        if (response) {
+          toast({
+            title: "Login Successful!",
+            description: "Welcome back!",
+            status: "success",
+            duration: 5000,
+            position: "top",
+            isClosable: true,
+          });
+          navigate(`/admindashboard`);
+        }
+      }
+      else{
       const response = await axios.post("http://localhost:5000/loginuser", {
         emailid: data.email,
         password: data.password,
@@ -43,7 +65,7 @@ const UserLogin = () => {
           isClosable: true,
         });
         navigate(`/${userid}`);
-      }
+      }}
     } catch (err) {
       console.log(err);
       toast({
@@ -55,6 +77,7 @@ const UserLogin = () => {
         isClosable: true,
       });
     }
+    
   };
   
 
